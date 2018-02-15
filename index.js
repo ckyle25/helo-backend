@@ -8,12 +8,13 @@ const express = require('express')
     , massive = require('massive')
     , session = require('express-session')
     , config = require('./config.js')
+    , controllers = require('./controllers/controllers.js')
 
 const app = module.exports = express();
 
 app.enable('trust proxy')
 app.use(bodyParser.json())
-app.use( cors() );
+app.use( cors({origin: 'http://localhost:3000',credentials: true}) );
 app.use(session({
   secret: config.secret,
   resave: false,
@@ -40,9 +41,9 @@ app.get('/auth/callback', passport.authenticate('auth0', {
     failureRedirect: 'http://localhost:3000/'
   }))
 
-passport.serializeUser(function(user, done) {
-  console.log(1,user)
-  done(null, user);
+passport.serializeUser(function(id, done) {
+  console.log(1,id)
+  done(null, id);
 });
 
 passport.deserializeUser(function(user, done) {
@@ -63,7 +64,10 @@ app.get('/auth/me', (req, res, next) => {
   }
 })
 
+app.get('/getCurrentUser/',controllers.getCurrentUser)
+
 app.get('/auth/logout', (req, res) => {
+console.log(req.user)
 req.logOut();
 // req.session.destroy();
 return res.redirect('http://localhost:3000/');
